@@ -400,60 +400,86 @@ char* derive(Node* node, char* var)
                     break;
                 }
             case '*':
+            /*here we tackle the case of multiplication*/
                 if (strcmp(leftExpr, "0") == 0 && strcmp(rightExpr, "0") == 0)
+                /*if all zero, then directly output 0*/
                 {
                     result = strdup("0");
+                    /*directly output 0*/
                 }
                 else if (strcmp(leftExpr, "0") == 0)
+                /*only one side of the expression is zero*/
                 {
                     if (strcmp(rightDeriv, "0") == 0)
                     {
+                        /*if the right derivative is zero*/
                         result = strdup("0");
+                        /*output 0*/
                     }
                     else
                     {
+                        /*if the right derivative is not zero*/
                         result = formatExpr("(%s * %s)", leftExpr, rightDeriv);
+                        /*output the answer of the multiplication*/
                     }
                 }
                 else if (strcmp(rightExpr, "0") == 0)
                 {
+                    /*if the right expression is 0*/
                     if (strcmp(leftDeriv, "0") == 0)
                     {
+                        /*if the right expression and left derivative are all zero*/
                         result = strdup("0");
+                        /*output 0*/
                     }
                     else
                     {
+                        /*if the left derivative is not zero*/
                         result = formatExpr("(%s * %s)", rightExpr, leftDeriv);
+                        /*output the answer of the multiplication*/
                     }
                 }
                 else if (strcmp(leftDeriv, "0") == 0 && strcmp(rightDeriv, "0") == 0)
                 {
+                    /*if the left and right derivative are all zero*/
                     result = strdup("0");
+                    /*output 0*/
                 }
                 else if (strcmp(leftDeriv, "0") == 0)
                 {
+                    /*if the left derivative is zero*/
                     result = formatExpr("(%s * %s)", leftExpr, rightDeriv);
+                    /*output the answer of the multiplication*/
                 }
                 else if (strcmp(rightDeriv, "0") == 0)
                 {
+                    /*if the right derivative is zero*/
                     result = formatExpr("(%s * %s)", rightExpr, leftDeriv);
+                    /*output the answer of the multiplication*/
                 }
                 else
                 {
+                    /*if there's no space for simplification*/
                     result = formatExpr("(%s * %s + %s * %s)", leftExpr, rightDeriv, rightExpr, leftDeriv);
+                    /*output the answer of the multiplication*/
                 }
                 break;
             case '/':
                 result = formatExpr("((%s * %s - %s * %s) / (%s ^ 2))", leftDeriv, rightExpr, rightDeriv, leftExpr, rightExpr);
+                /*output the answer of the division by the division derivative law*/
                 break;
             case '^':
                 {
                     char* powExpr = getNodeExpr(node);
+                    /*get the power of the expression*/
                     char* term1 = formatExpr("%s * ln(%s)", rightDeriv, leftExpr);
+                    /*separate the expression into two parts*/
                     char* term2 = formatExpr("%s * %s / %s", rightExpr, leftDeriv, leftExpr);
                     char* sumTerms = formatExpr("(%s + %s)", term1, term2);
+                    /*get the sumterms*/
                     result = formatExpr("%s * %s", powExpr, sumTerms);
                     free(term1);
+                    /*free the memory space*/
                     free(term2);
                     free(sumTerms);
                     free(powExpr);
@@ -461,12 +487,14 @@ char* derive(Node* node, char* var)
                 break;
             default:
                 result = strdup("0");
+                /*default output*/
         }
 
         free(leftDeriv);
         free(rightDeriv);
         free(leftExpr);
         free(rightExpr);
+        /*free all the memory that is malloced*/
         return result;
     }
     return strdup("0");
