@@ -20,7 +20,7 @@ int main()
     /*tokenize the input expression string*/
     rootPtr = createExpressionTree(tokenListPtr);
     if (rootPtr == NULL)
-    /*which means that the expressiontree is not successfully created*/
+    /*which means that the expression tree is not successfully created*/
     {
         printf("Invalid Expression!\n");
         return 0;

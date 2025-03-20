@@ -116,10 +116,10 @@ int getPrecedence(char operator)
 Node * createExpressionTree(TokenList * tokenListPtr)
 {
     int len = tokenListPtr->count;  /* total number of tokens */
-    /* Stack for operand nodes. */
+    /* Stack for operand nodes*/
     Node * nodeStack[TOKEN_MAX_NUM];
     int nodeTop = -1;
-    /* Stack for operator nodes. */
+    /* Stack for operator nodes*/
     Node * opStack[TOKEN_MAX_NUM];
     int opTop = -1;
     /* Process each token in the token list. */
@@ -213,11 +213,14 @@ void setChildren(Node * parent, Node * left, Node * right)
 char* getNodeExpr(Node* node)
 {
     /*used to visit the expression of the current node*/
-    if (node->type == TOKEN_IS_VAR) {
+    if (node->type == TOKEN_IS_VAR)
+    {
         /*variable case*/
         return strdup(node->variable);
         /*strdup is used to return a string that is copied, but not a pointer to the same memory space*/
-    } else if (node->type == TOKEN_IS_NUM) {
+    } 
+    else if (node->type == TOKEN_IS_NUM)
+    {
         /*number case*/
         char buf[EXPR_MAX_LEN];
         /*initialize a buffer zone*/
@@ -226,7 +229,9 @@ char* getNodeExpr(Node* node)
         /*copy the number to the buffer zone*/
         /*note that the number here is stored in the string form*/
         return strdup(buf);
-    } else if (node->type == TOKEN_IS_OPERATOR) {
+    } 
+    else if (node->type == TOKEN_IS_OPERATOR)
+    {
         /*the case where the token is an operator*/
         char* left = getNodeExpr(node->Left);
         /*extract the number as the left operand*/
@@ -249,6 +254,7 @@ char* getNodeExpr(Node* node)
 
 char* formatExpr(const char* fmt, ...)
 /*the ... is used to express that the parameters we accept can be different, according to the situation we are in*/
+/*we use va to tackle this problem because we might be faced with inputs with different lengths and requirements*/
 {
     va_list args;
     /*variable arguments, change depend on the situation*/
@@ -259,7 +265,7 @@ char* formatExpr(const char* fmt, ...)
     va_end(args);
     /*clean up the argument list*/
     char* buf = (char*)malloc(len + 1);
-    /**/
+    /*malloc the buffer space for the expression*/
     va_start(args, fmt);
     vsnprintf(buf, len + 1, fmt, args);
     /*store the string into the buffer zone*/
@@ -270,32 +276,68 @@ char* formatExpr(const char* fmt, ...)
 
 void collectVariables(Node* node, char** vars, int* count)
 {
-/**/
-    if (!node) return;
-    if (node->type == TOKEN_IS_VAR) {
+/*used to determine whether the given variable exists in our expression*/
+    if (!node)
+    { 
+        return NULL;
+    }
+    /*the case where the node is NULL*/
+    if (node->type == TOKEN_IS_VAR)
+    {
         bool exists = false;
-        for (int i = 0; i < *count; i++) {
-            if (strcmp(vars[i], node->variable) == 0) {
+        /*initially set to false*/
+        for (int i = 0; i < *count; i++)
+        /*traverse through all the variables*/
+        {
+            if (strcmp(vars[i], node->variable) == 0)
+            /*indicates that the variable exists*/
+            {
                 exists = true;
+                /*flag set to true*/
                 break;
             }
         }
-        if (!exists && *count < TOKEN_MAX_NUM) {
+        if (!exists && *count < TOKEN_MAX_NUM)
+        /*there doesn't exist the variable*/
+        {
             vars[*count] = strdup(node->variable);
+            /*copy the variable that has never been seen*/
             (*count)++;
+            /*count increment*/
+            /*note that count is a pointer because we want to modify the value of it*/
         }
     }
     collectVariables(node->Left, vars, count);
+    /*tail recursion to implement the collection in left subtree*/
     collectVariables(node->Right, vars, count);
+    /*collect in the right subtree*/
 }
 
 /*calculate the derivatives*/
-char* derive(Node* node, char* var) {
-    if (node->type == TOKEN_IS_VAR) {
-        return strcmp(node->variable, var) == 0 ? strdup("1") : strdup("0");
-    } else if (node->type == TOKEN_IS_NUM) {
+char* derive(Node* node, char* var)
+{
+    if (node->type == TOKEN_IS_VAR)
+    {
+        if (strcmp(node->variable, var) == 0)
+        {
+            return strdup("1");
+            /*if the variable is equal to the current node, then the variable is one*/
+            /*note that the numbers are always stored in string*/
+        }
+        else
+        {
+            /*if the variable is not equal to the current node, then the derivate must be independent*/
+            return strdup("0");
+        }
+    }
+    else if (node->type == TOKEN_IS_NUM)
+    {
+        /*the derivative of a constant is undoubtedly 0*/
         return strdup("0");
-    } else if (node->type == TOKEN_IS_OPERATOR) {
+    }
+    else if (node->type == TOKEN_IS_OPERATOR)
+    {
+        /*tackle the problem of derivative with operators*/
         char op = node->operator;
         char* leftDeriv = derive(node->Left, var);
         char* rightDeriv = derive(node->Right, var);
@@ -305,10 +347,40 @@ char* derive(Node* node, char* var) {
 
         switch(op) {
             case '+':
-                result = formatExpr("(%s + %s)", leftDeriv, rightDeriv);
+                if (leftDeriv == 0 && rightDeriv == 0)
+                {
+                    result = "0";
+                }
+                else if (leftDeriv == 0)
+                {
+                    result = rightDeriv;
+                }
+                else if (rightDeriv == 0)
+                {
+                    result = leftDeriv;
+                }
+                else
+                {
+                    result = formatExpr("(%s + %s)", leftDeriv, rightDeriv);
+                }
                 break;
             case '-':
+                if (leftDeriv == 0 && rightDeriv == 0)
+                {
+                    result = "0";
+                }
+                else if (leftDeriv == 0)
+                {
+                    result = formatExpr("-%s", rightDeriv);
+                }
+                else if (rightDeriv == 0)
+                {
+                    result = leftDeriv;
+                }
+                else
+                {
                 result = formatExpr("(%s - %s)", leftDeriv, rightDeriv);
+                }
                 break;
             case '*':
                 result = formatExpr("(%s * %s + %s * %s)", leftExpr, rightDeriv, rightExpr, leftDeriv);
@@ -343,25 +415,39 @@ char* derive(Node* node, char* var) {
 }
 
 void calculateGrad(Node * root) {
-    if (!root) return;
-
+    if (!root){
+        return;
+    /*if the expression tree is not generated, then return NULL*/
+    }
     char* variables[TOKEN_MAX_NUM];
+    /*create the variable list*/
     int varCount = 0;
+    /*count the number of variables*/
     collectVariables(root, variables, &varCount);
-
+    /*collect variables recursively from the root pointer of the entire expression tree*/
     qsort(variables, varCount, sizeof(char*), compareStrings);
-
-    for (int i = 0; i < varCount; i++) {
+    /*sort the variables in the lexicographical order, with compareStrings() providing the comparing function*/
+    /*because the requirement is to output with the lexicographical order, I use this.*/
+    for (int i = 0; i < varCount; i++)
+    {
         char* derivExpr = derive(root, variables[i]);
+        /*calculate the derivative of the expression*/
+        /*traversing through every variable from the root*/
         printf("%s: %s\n", variables[i], derivExpr);
+        /*output the variable and their derivatives*/
         free(derivExpr);
+        /*setting free memory space*/
     }
 
-    for (int i = 0; i < varCount; i++) {
+    for (int i = 0; i < varCount; i++)
+    {
         free(variables[i]);
+        /*setting free the memory space*/
     }
 }
 
-int compareStrings(const void* a, const void* b) {
-    return strcmp(*(char**)a, *(char**)b);
+int compareStrings(char * a, char * b)
+{
+    /*will be used in calculateGrad() for sorting with lexicographical order*/
+    return strcmp(a, b);
 }
