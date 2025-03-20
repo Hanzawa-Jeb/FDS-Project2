@@ -390,15 +390,43 @@ char* derive(Node* node, char* var)
                 }
                 else if (strcmp(rightDeriv, "0") == 0)
                 {
+                    /*if the right derivative is 0, then directly output the leftderivative*/
                     result = strdup(leftDeriv);
                 }
                 else
                 {
-                result = formatExpr("(%s - %s)", leftDeriv, rightDeriv);
-                break;
+                    /*no space for simplification*/
+                    result = formatExpr("(%s - %s)", leftDeriv, rightDeriv);
+                    break;
                 }
             case '*':
-                if (strcmp(leftExpr, "0") == 0 || strcmp(rightExpr, "0") == 0)
+                if (strcmp(leftExpr, "0") == 0 && strcmp(rightExpr, "0") == 0)
+                {
+                    result = strdup("0");
+                }
+                else if (strcmp(leftExpr, "0") == 0)
+                {
+                    if (strcmp(rightDeriv, "0") == 0)
+                    {
+                        result = strdup("0");
+                    }
+                    else
+                    {
+                        result = formatExpr("(%s * %s)", leftExpr, rightDeriv);
+                    }
+                }
+                else if (strcmp(rightExpr, "0") == 0)
+                {
+                    if (strcmp(leftDeriv, "0") == 0)
+                    {
+                        result = strdup("0");
+                    }
+                    else
+                    {
+                        result = formatExpr("(%s * %s)", rightExpr, leftDeriv);
+                    }
+                }
+                else if (strcmp(leftDeriv, "0") == 0 && strcmp(rightDeriv, "0") == 0)
                 {
                     result = strdup("0");
                 }
@@ -408,7 +436,7 @@ char* derive(Node* node, char* var)
                 }
                 else if (strcmp(rightDeriv, "0") == 0)
                 {
-                    result = formatExpr("(%s * %s)", leftDeriv, rightExpr);
+                    result = formatExpr("(%s * %s)", rightExpr, leftDeriv);
                 }
                 else
                 {
@@ -468,7 +496,6 @@ void calculateGrad(Node * root) {
         free(derivExpr);
         /*setting free memory space*/
     }
-
     for (int i = 0; i < varCount; i++)
     {
         free(variables[i]);
@@ -479,4 +506,5 @@ void calculateGrad(Node * root) {
 int compareStrings(char * a, char * b)
 {
     return strcmp(* (char **)a, * (char **)b);
+    /*compare the strings in the lexicographical order, which is going to be used in the qsort()*/
 }
