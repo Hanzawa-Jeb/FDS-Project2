@@ -210,7 +210,8 @@ void setChildren(Node * parent, Node * left, Node * right)
     /*setting the parent node of the currentnode*/
 }
 
-char* getNodeExpr(Node* node) {
+char* getNodeExpr(Node* node)
+{
     /*used to visit the expression of the current node*/
     if (node->type == TOKEN_IS_VAR) {
         /*variable case*/
@@ -235,55 +236,41 @@ char* getNodeExpr(Node* node) {
         /*extract the operator*/
         char buf[EXPR_MAX_LEN];
         /*create the buffer zone for storing*/
-        if ((op == '0') && strcmp(left, right) == 0)
-        {
-            sprintf(buf, "0");
-        }
-        else if ((op == '*') && (strcmp(left, "0") == 0 || strcmp(right, "0") == 0))
-        {
-            sprintf(buf, "0");
-        }
-        else if ((op == '^') && strcmp(right, "0") == 0)
-        {
-            sprintf(buf, "1");
-        }
-        else if (op == '/' && strcmp(right, "1") == 0)
-        {
-            sprintf(buf, "%s", left);
-        }
-        else if (op == '+' && strcmp(left, "0") == 0)
-        {
-            sprintf(buf, "%s", right);
-        }
-        else if (op == '-' && strcmp(right, "0") == 0)
-        {
-            sprintf(buf, "%s", left);
-        }
-        else
-        {
-            sprintf(buf, "(%s %c %s)", left, op, right);
-        }
         sprintf(buf, "(%s %c %s)", left, op, right);
+        /*push the expression into the buffer*/
         free(left);
         free(right);
+        /*free the memory space that are malloced*/
         return strdup(buf);
     }
     return strdup("0");
+    /*if no situation is satisfied, then return 0 directly*/
 }
 
-char* formatExpr(const char* fmt, ...) {
+char* formatExpr(const char* fmt, ...)
+/*the ... is used to express that the parameters we accept can be different, according to the situation we are in*/
+{
     va_list args;
+    /*variable arguments, change depend on the situation*/
     va_start(args, fmt);
+    /*fmt is the last fixed parameter*/
     int len = vsnprintf(NULL, 0, fmt, args);
+    /*although we don't need the buffer, we can use this function to get the length of the string*/
     va_end(args);
+    /*clean up the argument list*/
     char* buf = (char*)malloc(len + 1);
+    /**/
     va_start(args, fmt);
     vsnprintf(buf, len + 1, fmt, args);
+    /*store the string into the buffer zone*/
     va_end(args);
+    /*clean the entire variable argument list*/
     return buf;
 }
 
-void collectVariables(Node* node, char** vars, int* count) {
+void collectVariables(Node* node, char** vars, int* count)
+{
+/**/
     if (!node) return;
     if (node->type == TOKEN_IS_VAR) {
         bool exists = false;
@@ -302,7 +289,7 @@ void collectVariables(Node* node, char** vars, int* count) {
     collectVariables(node->Right, vars, count);
 }
 
-// 计算导数
+/*calculate the derivatives*/
 char* derive(Node* node, char* var) {
     if (node->type == TOKEN_IS_VAR) {
         return strcmp(node->variable, var) == 0 ? strdup("1") : strdup("0");
