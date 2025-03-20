@@ -279,7 +279,7 @@ void collectVariables(Node* node, char** vars, int* count)
 /*used to determine whether the given variable exists in our expression*/
     if (!node)
     { 
-        return NULL;
+        return;
     }
     /*the case where the node is NULL*/
     if (node->type == TOKEN_IS_VAR)
@@ -339,51 +339,81 @@ char* derive(Node* node, char* var)
     {
         /*tackle the problem of derivative with operators*/
         char op = node->operator;
+        /*get the operator*/
         char* leftDeriv = derive(node->Left, var);
+        /*get the derivative of the left operand*/
         char* rightDeriv = derive(node->Right, var);
+        /*get the derivative of the right operand*/
         char* leftExpr = getNodeExpr(node->Left);
+        /*get the expression of the left operand*/
         char* rightExpr = getNodeExpr(node->Right);
+        /*get the expression of the right operand*/
+        /*these four expression will be used in the deriving process*/
         char* result = NULL;
-
+        /*default output*/
         switch(op) {
+            /*switch the case according to the operator*/
             case '+':
-                if (leftDeriv == 0 && rightDeriv == 0)
+                if (strcmp(leftDeriv, "0") == 0 && strcmp(rightDeriv, "0") == 0)
                 {
-                    result = "0";
+                    result = strdup("0");
+                    /*if the left and right derivative are all zero, then the output must be also zero.*/
                 }
-                else if (leftDeriv == 0)
+                else if (strcmp(leftDeriv, "0") == 0)
                 {
-                    result = rightDeriv;
+                    /*simplifying the answer*/
+                    result = strdup(rightDeriv);
                 }
-                else if (rightDeriv == 0)
+                else if (strcmp(rightDeriv, "0") == 0)
                 {
-                    result = leftDeriv;
+                    /*simplifying the answer in the same way*/
+                    result = strdup(leftDeriv);
                 }
                 else
                 {
+                    /*in this case, there's no space for further simplification*/
                     result = formatExpr("(%s + %s)", leftDeriv, rightDeriv);
                 }
                 break;
             case '-':
-                if (leftDeriv == 0 && rightDeriv == 0)
+            /*the situation of minus*/
+                if (strcmp(leftDeriv, "0") == 0 && strcmp(rightDeriv, "0") == 0)
                 {
-                    result = "0";
+                    result = strdup("0");
+                    /*if the left and right are both 0, then output 0 directly*/
                 }
-                else if (leftDeriv == 0)
+                else if (strcmp(leftDeriv, "0") == 0)
                 {
-                    result = formatExpr("-%s", rightDeriv);
+                    /*if the left is 0, then output the negation of the right derivative*/
+                    result = formatExpr("(-%s)", rightDeriv);
+                    /*single variable format expression is also feasible because of our function*/
                 }
-                else if (rightDeriv == 0)
+                else if (strcmp(rightDeriv, "0") == 0)
                 {
-                    result = leftDeriv;
+                    result = strdup(leftDeriv);
                 }
                 else
                 {
                 result = formatExpr("(%s - %s)", leftDeriv, rightDeriv);
-                }
                 break;
+                }
             case '*':
-                result = formatExpr("(%s * %s + %s * %s)", leftExpr, rightDeriv, rightExpr, leftDeriv);
+                if (strcmp(leftExpr, "0") == 0 || strcmp(rightExpr, "0") == 0)
+                {
+                    result = strdup("0");
+                }
+                else if (strcmp(leftDeriv, "0") == 0)
+                {
+                    result = formatExpr("(%s * %s)", leftExpr, rightDeriv);
+                }
+                else if (strcmp(rightDeriv, "0") == 0)
+                {
+                    result = formatExpr("(%s * %s)", leftDeriv, rightExpr);
+                }
+                else
+                {
+                    result = formatExpr("(%s * %s + %s * %s)", leftExpr, rightDeriv, rightExpr, leftDeriv);
+                }
                 break;
             case '/':
                 result = formatExpr("((%s * %s - %s * %s) / (%s ^ 2))", leftDeriv, rightExpr, rightDeriv, leftExpr, rightExpr);
@@ -448,6 +478,5 @@ void calculateGrad(Node * root) {
 
 int compareStrings(char * a, char * b)
 {
-    /*will be used in calculateGrad() for sorting with lexicographical order*/
-    return strcmp(a, b);
+    return strcmp(* (char **)a, * (char **)b);
 }
