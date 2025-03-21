@@ -94,7 +94,7 @@ void tokenize(char * expression, TokenList * tokenListPtr) {
 #### Pseudo-code
 ```c
 Node * createExpressionTree(TokenList * tokenListPtr) {
-  intialize tokenListLen, nodeStack, opStack;
+  initialize tokenListLen, nodeStack, opStack;
   for (i < tokenListLen) {
     switch(tokenListPtr->type):
       process expressions with precedence considered;

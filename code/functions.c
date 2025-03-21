@@ -5,53 +5,58 @@
 #include <stdarg.h>
 #include <string.h>
 #include "header.h"
+
 /*necessary header files included*/
 
-Node * createNode(char type, char operation, int number, char * variable){
-    Node * tempNode = (Node * )calloc(1, sizeof(Node));
+Node *createNode(char type, char operation, int number, char *variable) {
+    Node *tempNode = (Node *)calloc(1, sizeof(Node));
     /*malloc memory for the node*/
     tempNode->type = type;
     tempNode->operator = operation;
     tempNode->number = number;
     /*assign basic information of the node*/
+
     strcpy(tempNode->variable, "");
     /*initialize the tempNode*/
-    if (variable != NULL)
-    {
+    if (variable != NULL) {
         strcpy(tempNode->variable, variable);
         /*if the variable is not empty, then initialize the variable*/
     }
+
     tempNode->Left = NULL;
     tempNode->Right = NULL;
     tempNode->Parent = NULL;
     /*set to NULL first, later we would use */
+
     return tempNode;
 }
 
-bool isOperator(char c)
-{
+bool isOperator(char c) {
     return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^');
     /*implement the judgement of operators*/
 }
 
-void tokenize(char* expression, TokenList* tokenListPtr) {
+void tokenize(char *expression, TokenList *tokenListPtr) {
     int expressionLength = strlen(expression);
     int i = 0, j = 0;
     /*there are to pointers here, i is for the traversal of the entire expression*/
     /*j is for the traversal of the storage of the token in tokenList*/
     tokenListPtr->count = 0;
     /*initialize the count of all tokens*/
+
     while (i < expressionLength) {
         if (isspace(expression[i])) {
         /*if it is space, then skip*/
-            i ++;
+            i++;
             continue;
         }
+
         j = 0;
         /*j will be initialized for every token*/
+
         if (isdigit(expression[i])) {
             while (i < expressionLength && isdigit(expression[i]) && j < TOKEN_MAX_NUM - 1) {
-                tokenListPtr->tokens[tokenListPtr->count][j ++] = expression[i ++];
+                tokenListPtr->tokens[tokenListPtr->count][j++] = expression[i++];
                 /*the tokens will be stored in tokenList*/
                 /*note that the while loop here is for the storage of multi-bit numbers*/
             }
@@ -74,15 +79,16 @@ void tokenize(char* expression, TokenList* tokenListPtr) {
             tokenListPtr->types[tokenListPtr->count] = TOKEN_IS_VAR;
         }
         else {
-            i ++;  
+            i++;
             /*the case of other invalid inputs, we can directly skip the characters*/
             continue;
         }
+
         tokenListPtr->tokens[tokenListPtr->count][j] = '\0';
         /*store the last token to be NULL string, indicating the termination of the entire sequence*/
         if (j > 0) {
         /*j can serve as a flag for actual storage, if 0, then it means that no tokens are stored. */
-            tokenListPtr -> count ++;
+            tokenListPtr->count++;
             /*the count will only be increased when there exists valid token*/
         }
     }
@@ -92,8 +98,7 @@ void tokenize(char* expression, TokenList* tokenListPtr) {
 int getPrecedence(char operator)
 /*help us to get the precedence of different operators*/
 {
-    switch (operator)
-    {
+    switch (operator) {
         case '^':
             return 3;
     /*top priority for the power operator*/
@@ -111,57 +116,50 @@ int getPrecedence(char operator)
             return -1;
     }
 }
+
 /*createExpressionTree: Build an expression tree from the token list*/
 /*we will implement with two stacks to store numbers/variables(operands) and operators*/
-Node * createExpressionTree(TokenList * tokenListPtr)
-{
+Node *createExpressionTree(TokenList *tokenListPtr) {
     int len = tokenListPtr->count;  /* total number of tokens */
     /* Stack for operand nodes*/
-    Node * nodeStack[TOKEN_MAX_NUM];
+    Node *nodeStack[TOKEN_MAX_NUM];
     int nodeTop = -1;
     /* Stack for operator nodes*/
-    Node * opStack[TOKEN_MAX_NUM];
+    Node *opStack[TOKEN_MAX_NUM];
     int opTop = -1;
     /* Process each token in the token list. */
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
         /*if the token is a number, push it in the stack*/
-        if (tokenListPtr->types[i] == TOKEN_IS_NUM)
-        {
-            Node * newNode = createNode(TOKEN_IS_NUM, '\0', atoi(tokenListPtr->tokens[i]), NULL);
+        if (tokenListPtr->types[i] == TOKEN_IS_NUM) {
+            Node *newNode = createNode(TOKEN_IS_NUM, '\0', atoi(tokenListPtr->tokens[i]), NULL);
             nodeStack[++nodeTop] = newNode;
         }
         /*note that every time we need to create the node*/
-        else if (tokenListPtr->types[i] == TOKEN_IS_VAR)
-        {
-            Node * newNode = createNode(TOKEN_IS_VAR, '\0', 0, tokenListPtr->tokens[i]);
+        else if (tokenListPtr->types[i] == TOKEN_IS_VAR) {
+            Node *newNode = createNode(TOKEN_IS_VAR, '\0', 0, tokenListPtr->tokens[i]);
             nodeStack[++nodeTop] = newNode;
         }
         /*the case where the token is an operator or a parenthesis*/
-        else if (tokenListPtr->types[i] == TOKEN_IS_OPERATOR)
-        {
+        else if (tokenListPtr->types[i] == TOKEN_IS_OPERATOR) {
             char currentOp = tokenListPtr->tokens[i][0];
             /*tackle the case where left parenthesis appears*/
-            if (currentOp == '(')
-            {
-                Node * newNode = createNode(TOKEN_IS_OPERATOR, currentOp, 0, NULL);
+            if (currentOp == '(') {
+                Node *newNode = createNode(TOKEN_IS_OPERATOR, currentOp, 0, NULL);
                 opStack[++opTop] = newNode;
             }
             /*pop */
-            else if (currentOp == ')')
-            {
-                while (opTop >= 0 && opStack[opTop]->operator != '(')
-                {
+            else if (currentOp == ')') {
+                while (opTop >= 0 && opStack[opTop]->operator != '(') {
                     if (nodeTop < 1)  // error check for insufficient operands
                     {
                         printf("Invalid input\n");
                         return NULL;
                     }
                     /* Pop an operator node*/
-                    Node * opNode = opStack[opTop--];
+                    Node *opNode = opStack[opTop--];
                     /* Pop two operand nodes from nodeStack*/
-                    Node * right = nodeStack[nodeTop--];
-                    Node * left = nodeStack[nodeTop--];
+                    Node *right = nodeStack[nodeTop--];
+                    Node *left = nodeStack[nodeTop--];
                     /*set the children nodes and their parents*/
                     setChildren(opNode, left, right);
                     /*push the corresponding sub-tree*/
@@ -171,41 +169,38 @@ Node * createExpressionTree(TokenList * tokenListPtr)
                 if (opTop >= 0)
                     opTop--;
             }
-            else
-            {
+            else {
                 /*tackle the case of meeting greater precedence*/
-                while (opTop >= 0 && getPrecedence(opStack[opTop]->operator) >= getPrecedence(currentOp))
-                {
+                while (opTop >= 0 && getPrecedence(opStack[opTop]->operator) >= getPrecedence(currentOp)) {
                     if (nodeTop < 1)  // error check for insufficient operands
                     {
                         printf("Invalid input\n");
                         return NULL;
                     }
-                    Node * opNode = opStack[opTop--];
+                    Node *opNode = opStack[opTop--];
                     /*pop two nodes as operands*/
-                    Node * right = nodeStack[nodeTop--];
-                    Node * left = nodeStack[nodeTop--];
+                    Node *right = nodeStack[nodeTop--];
+                    Node *left = nodeStack[nodeTop--];
                     /*set the children*/
                     setChildren(opNode, left, right);
                     nodeStack[++nodeTop] = opNode;
-                    /*push the node pack to the stack*/
+                    /*push the node back to the stack*/
                 }
-                Node * newOpNode = createNode(TOKEN_IS_OPERATOR, currentOp, 0, NULL);
+                Node *newOpNode = createNode(TOKEN_IS_OPERATOR, currentOp, 0, NULL);
                 opStack[++opTop] = newOpNode;
             }
         }
     }
     /*processing left parenthesis that are left here*/
-    while (opTop >= 0)
-    {
+    while (opTop >= 0) {
         if (nodeTop < 1)  // error check
         {
             printf("Invalid input\n");
             return NULL;
         }
-        Node * opNode = opStack[opTop--];
-        Node * right = nodeStack[nodeTop--];
-        Node * left = nodeStack[nodeTop--];
+        Node *opNode = opStack[opTop--];
+        Node *right = nodeStack[nodeTop--];
+        Node *left = nodeStack[nodeTop--];
         setChildren(opNode, left, right);
         /*set the corresponding children*/
         nodeStack[++nodeTop] = opNode;
@@ -219,7 +214,7 @@ Node * createExpressionTree(TokenList * tokenListPtr)
     return nodeStack[nodeTop];
 }
 
-void setChildren(Node * parent, Node * left, Node * right)
+void setChildren(Node *parent, Node *left, Node *right)
 /*the function to set the children of a node and the parent of the node, to make indexing easier.*/
 {
     parent->Left = left;
@@ -238,7 +233,7 @@ char* getNodeExpr(Node* node)
         /*variable case*/
         return strdup(node->variable);
         /*strdup is used to return a string that is copied, but not a pointer to the same memory space*/
-    } 
+    }
     else if (node->type == TOKEN_IS_NUM)
     {
         /*number case*/
@@ -249,7 +244,7 @@ char* getNodeExpr(Node* node)
         /*copy the number to the buffer zone*/
         /*note that the number here is stored in the string form*/
         return strdup(buf);
-    } 
+    }
     else if (node->type == TOKEN_IS_OPERATOR)
     {
         /*the case where the token is an operator*/
@@ -298,7 +293,7 @@ void collectVariables(Node* node, char** vars, int* count)
 {
 /*used to determine whether the given variable exists in our expression*/
     if (!node)
-    { 
+    {
         return;
     }
     /*the case where the node is NULL*/
@@ -504,12 +499,12 @@ char* derive(Node* node, char* var)
                 break;
             case '^':
                 {
-                    char * powExpr = getNodeExpr(node);
+                    char *powExpr = getNodeExpr(node);
                     /*get the power of the expression*/
-                    char * term1 = formatExpr("%s * ln(%s)", rightDeriv, leftExpr);
+                    char *term1 = formatExpr("%s * ln(%s)", rightDeriv, leftExpr);
                     /*separate the expression into two parts*/
                     char* term2 = formatExpr("%s * %s / %s", rightExpr, leftDeriv, leftExpr);
-                    char * sumTerms = formatExpr("(%s + %s)", term1, term2);
+                    char *sumTerms = formatExpr("(%s + %s)", term1, term2);
                     /*get the sumterms*/
                     result = formatExpr("%s * %s", powExpr, sumTerms);
                     free(term1);
@@ -533,29 +528,30 @@ char* derive(Node* node, char* var)
     return strdup("0");
 }
 
-void calculateGrad(Node * root) {
-    if (!root){
+void calculateGrad(Node *root) {
+    if (!root) {
         printf("Invalid input!\n");
         return;
     /*if the expression tree is not generated, then return NULL*/
     }
+
     char* variables[TOKEN_MAX_NUM];
     /*create the variable list*/
     int varCount = 0;
     /*count the number of variables*/
     collectVariables(root, variables, &varCount);
     /*collect variables recursively from the root pointer of the entire expression tree*/
-    if (varCount == 0)
-    {
+    if (varCount == 0) {
         printf("Underivable Expression!\n");
         /*if there is no variable, then the expression is underivable*/
         return;
     }
+
     qsort(variables, varCount, sizeof(char*), compareStrings);
     /*sort the variables in the lexicographical order, with compareStrings() providing the comparing function*/
     /*because the requirement is to output with the lexicographical order, I use this.*/
-    for (int i = 0; i < varCount; i++)
-    {
+
+    for (int i = 0; i < varCount; i++) {
         char* derivExpr = derive(root, variables[i]);
         /*calculate the derivative of the expression*/
         /*traversing through every variable from the root*/
@@ -564,15 +560,14 @@ void calculateGrad(Node * root) {
         free(derivExpr);
         /*setting free memory space*/
     }
-    for (int i = 0; i < varCount; i++)
-    {
+
+    for (int i = 0; i < varCount; i++) {
         free(variables[i]);
         /*setting free the memory space*/
     }
 }
 
-int compareStrings(char * a, char * b)
-{
+int compareStrings(char *a, char *b) {
     return strcmp(* (char **)a, * (char **)b);
     /*compare the strings in the lexicographical order, which is going to be used in the qsort()*/
 }
