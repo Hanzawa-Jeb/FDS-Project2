@@ -18,11 +18,12 @@ We can handle this problem in a **Step-by-step operation**.
 - What's next, we need to use `collectVariables()`**collect all the variables** and use `derive()` to **calculate the derivatives** of every variable from the root of the expression tree.
 - Last, We use `calculateGrad()` to traverse all the variable and **output the derivatives** in the lexicographical order.
 
-## Pseudo-code for structs
+## Specifications for structs
 ### struct Node
 #### Description
 - This struct is used to store one node in the expression tree, with its type and corresponding value.
 - Note that **only one** in operator, number and variable need to be stored, according to the type.
+#### Pseudo-code
 ```c
 typedef struct Node {
   int type;
@@ -37,6 +38,7 @@ typedef struct Node {
 #### Description
 - This struct is used to **store tokens**, after they are extracted from the input infix expression. And then, they will be sent to **construct the expression tree.**
 - **types** are the corresponding types of the token with the same index.
+#### Pseudo-code
 ```c
 typedef struct TokenList {
   char tokens[N][N];
@@ -45,34 +47,31 @@ typedef struct TokenList {
 }
 ```
 
-## Pseudo-code for functions
+## Specifications for functions
 ### tokenize()
 #### Description:
-- This function is used to separate the expression into fractions with types labeled, so that we can do further process to variables, literal constants and operators.
+- This function is used to **separate the expression into fractions** with types labeled, so that we can do further process to variables, literal constants and operators.
+#### Pseudo-code
 ```c
 void tokenize(char * expression, TokenList * tokenListPtr) {
   int i = 0;
   while (i < expressionLength) {
     if (isspace(expression[i])) {
       continue;
-    }
-    else if (isdigit(expression[i])) {
+    } else if (isdigit(expression[i])) {
       while loop until !isdigit(expression[i]) {
         store each bit of the number in the tokenlist;
       }
       flag the type; 
-    }
-    else if (isOperator(expression[i])) {
+    } else if (isOperator(expression[i])) {
       store the operator;
       flag the type;
-    }
-    else if (isalpha(expression[i]) || expression[i] == '_') {
+    } else if (isalpha(expression[i]) || expression[i] == '_') {
       while loop until !(isalnum(expression[i]) || expression[i] == '_') {
         store each bit of the variable name in the tokenlist;
       }
       flag the type;
-    }
-    else {
+    } else {
       continue;
       /*invalid input*/
     }
@@ -82,7 +81,56 @@ void tokenize(char * expression, TokenList * tokenListPtr) {
 
 ### createExpressionTree()
 #### Description
-- `createExpressionTree()` is used to construct a binary tree storing all the operators and operands with data from the tokenList. We maintain two stacks, one is used to store operands and one is used to 
+- `createExpressionTree()` is used to construct a binary tree storing all the operators and operands with data from the tokenList. We maintain **two stacks**, **nodeStack** is used to store operands and one is used to store operators. And then we maintain **opStacksss** according to the precedence of operators.
+#### Pseudo-code
+```c
+Node * createExpressionTree(TokenList * tokenListPtr) {
+  intialize tokenListLen, nodeStack, opStack;
+  for (i < tokenListLen) {
+    if (tokenListPtr->type == TOKEN_IS_NUM) {
+      createNode(num_type);
+      push in nodeStack;
+    } else if (tokenListPtr->type == TOKEN_IS_VAR) {
+      createNode(var_type);
+      push in nodeStack;
+    } else if (tokenListPtr->type == TOKEN_IS_OPERATOR) {
+      get operator;
+      if (operator == '(') {
+        createNode(op_type);
+        push in opstack;
+      } else if (operator == ')') {
+        while (opTop >= 0 && opStack[opTop]) {
+          pop opNode, rightOperand, leftOperand;
+          setChildren(opNode, leftOperand, rightOperand);
+          push into nodeStack;
+        }
+        if (top >= 0) {
+          pop all the remaining operators;
+        }
+      } else {
+        while (opTop >= 0 && getPrecedence(topOperator) >= getPrecedence(currentOperator)) {
+          pop opNode, left, right;
+          setChildren(opNode, left, right);
+          push into nodeStack;
+        }
+        Node * newOpNode = createNode(operator_type);
+        push into opStack;
+      }
+    }
+  }
+  while (opTop >= 0) {
+    pop opNode, left, right;
+    setChildren(opNode, left, right);
+    push into nodeStack
+  }
+  return nodeTop;
+}
+```
+
+### getNodeExpr
+#### Description
+- This function is used to generate the corresponding string expression of a certain node. If the node is a **operand node**, then we output the string form of the operand. If the node is an **operator node**, then we output the expression string, combining the left operand, operator and the right operand. Note that the operand here came from **recursive call of getNodeExpr()**
+
 
 # 3. Testing Results
 
