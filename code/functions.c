@@ -152,6 +152,11 @@ Node * createExpressionTree(TokenList * tokenListPtr)
             {
                 while (opTop >= 0 && opStack[opTop]->operator != '(')
                 {
+                    if (nodeTop < 1)  // error check for insufficient operands
+                    {
+                        printf("Invalid input\n");
+                        return NULL;
+                    }
                     /* Pop an operator node*/
                     Node * opNode = opStack[opTop--];
                     /* Pop two operand nodes from nodeStack*/
@@ -171,6 +176,11 @@ Node * createExpressionTree(TokenList * tokenListPtr)
                 /*tackle the case of meeting greater precedence*/
                 while (opTop >= 0 && getPrecedence(opStack[opTop]->operator) >= getPrecedence(currentOp))
                 {
+                    if (nodeTop < 1)  // error check for insufficient operands
+                    {
+                        printf("Invalid input\n");
+                        return NULL;
+                    }
                     Node * opNode = opStack[opTop--];
                     /*pop two nodes as operands*/
                     Node * right = nodeStack[nodeTop--];
@@ -188,6 +198,11 @@ Node * createExpressionTree(TokenList * tokenListPtr)
     /*processing left parenthesis that are left here*/
     while (opTop >= 0)
     {
+        if (nodeTop < 1)  // error check
+        {
+            printf("Invalid input\n");
+            return NULL;
+        }
         Node * opNode = opStack[opTop--];
         Node * right = nodeStack[nodeTop--];
         Node * left = nodeStack[nodeTop--];
@@ -195,8 +210,13 @@ Node * createExpressionTree(TokenList * tokenListPtr)
         /*set the corresponding children*/
         nodeStack[++nodeTop] = opNode;
     }
+    if (nodeTop != 0)  /* If there is more than one node, then the input is invalid */
+    {
+        printf("Invalid input\n");
+        return NULL;
+    }
     /*return the final node, which is the root.*/
-    return (nodeTop >= 0) ? nodeStack[nodeTop] : NULL;
+    return nodeStack[nodeTop];
 }
 
 void setChildren(Node * parent, Node * left, Node * right)
@@ -515,6 +535,7 @@ char* derive(Node* node, char* var)
 
 void calculateGrad(Node * root) {
     if (!root){
+        printf("Invalid input\n");
         return;
     /*if the expression tree is not generated, then return NULL*/
     }

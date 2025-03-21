@@ -205,6 +205,9 @@ Here, we are testing various cases to seek potential issues in our program. Thes
 | (a+b)^c    | expression with parentheses     | a: ((a + b) ^ c) * (0 * ln((a + b)) + c * 1 / (a + b)) b: ((a + b) ^ c) * (0 * ln((a + b)) + c * 1 / (a + b)), c: ((a + b) ^ c) * (1 * ln((a + b)) + c * 0 / (a + b))     | *pass*     |
 | a+b+c+d+e+f*g  | relatively long expression  | a:1, b:1, c:1, d:1, e:1, f:(g\*1), g:(f\*1)   | *pass*     |
 | a    | expression with only one variable    | a: 1     | *pass*     |
+| a +  | invalid input expression   |  Invalid input!  | *pass* |
+
+After airthmetic simplification on our result, we can discover that our results are all correct. 
 
 
 

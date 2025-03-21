@@ -26,7 +26,6 @@ int main()
     if (rootPtr == NULL)
     /*which means that the expression tree is not successfully created*/
     {
-        printf("Invalid Expression!\n");
         return 0;
     }
     else
