@@ -3,27 +3,30 @@ colorlinks: linkcolor, urlcolor
 ...
 ---
 
-# 1. Introduction
-We are faced with processing a mathematical expression $S$ in **infix expression** and calculating its gradient with respect to each variable. The results should be output in **lexicographical order**, with the gradient represented by literal constants and other variables.
+# 1. Introduction  
+We are faced with processing a mathematical expression $S$ in **infix expression** and calculating its gradient with respect to each variable. The results should be output in **lexicographical order**, with the gradient represented by literal constants and other variables.  
 
-Automatic gradient calculation plays an important role in **Machine Learning**. Famous packages like `PyTorch` has functions such as `.backward()` to compute gradients during **backpropagation**, optimizing the *weights and biases* of the model. This project provides a chance to implement `autograd` from scratch, which is undoubtedly interesting.
+Automatic gradient calculation plays an important role in **Machine Learning**. Famous packages like `PyTorch` has functions such as `.backward()` to compute gradients during **backpropagation**, optimizing the *weights and biases* of the model. This project provides a chance to implement `autograd` from scratch, which is undoubtedly interesting.  
 
-# 2. Algorithm Specification
+# 2. Algorithm Specification  
 
-## Overall Insight
-We can handle this problem in a **Step-by-step operation**.
-- First, we should **tokenize** the expression, separating **variables**, **literal values** and **operators**.
-- After the tokenization, I constructed a **tokenList** to store the different elements with their types explicitly labeled.
-- And then, in `constructExpressionTree()`, I construct a **Expression Tree** with stacks to handle the problem of precedence of different calculations.
-- What's next, we need to use `collectVariables()`**collect all the variables** and use `derive()` to **calculate the derivatives** of every variable from the root of the expression tree.
-- Last, We use `calculateGrad()` to traverse all the variable and **output the derivatives** in the lexicographical order.
+## Overall Insight  
+We can handle this problem in a **Step-by-step operation**.  
+- First, we should **tokenize** the expression, separating **variables**, **literal values** and **operators**.  
+- After the tokenization, I constructed a **tokenList** to store the different elements with their types explicitly labeled.  
+- And then, in `constructExpressionTree()`, I construct a **Expression Tree** with stacks to handle the problem of precedence of different calculations.  
+- What's next, we need to use `collectVariables()`**collect all the variables** and use `derive()` to **calculate the derivatives** of every variable from the root of the expression tree.  
+- Last, We use `calculateGrad()` to traverse all the variable and **output the derivatives** in the lexicographical order.  
 
-## Specifications for structs
-### struct Node
-#### Description
-- This struct is used to store one node in the expression tree, with its type and corresponding value.
-- Note that **only one** in operator, number and variable need to be stored, according to the type.
-#### Pseudo-code
+## Specifications for *data structures*
+
+### struct Node  
+
+#### Description  
+- This struct is used to store one node in the expression tree, with its type and corresponding value.  
+- Note that **only one** in operator, number and variable need to be stored, according to the type.  
+
+#### Pseudo-code  
 ```c
 typedef struct Node {
   int type;
@@ -34,10 +37,13 @@ typedef struct Node {
   struct Node *parent;
 } Node;
 ```
-### struct TokenList
-#### Description
-- This struct is used to **store tokens**, after they are extracted from the input infix expression. And then, they will be sent to **construct the expression tree.**
-- **types** are the corresponding types of the token with the same index.
+
+### struct TokenList  
+
+#### Description  
+- This struct is used to **store tokens**, after they are extracted from the input infix expression. And then, they will be sent to **construct the expression tree.**  
+- **types** are the corresponding types of the token with the same index.  
+
 #### Pseudo-code
 ```c
 typedef struct TokenList {
@@ -47,10 +53,13 @@ typedef struct TokenList {
 }
 ```
 
-## Specifications for functions
+## Specifications for *Algorithms*
+
 ### tokenize()
+
 #### Description:
 - This function is used to **separate the expression into fractions** with types labeled, so that we can do further process to variables, literal constants and operators.
+
 #### Pseudo-code
 ```c
 void tokenize(char * expression, TokenList * tokenListPtr) {
@@ -80,8 +89,10 @@ void tokenize(char * expression, TokenList * tokenListPtr) {
 ```
 
 ### createExpressionTree()
+
 #### Description
 - `createExpressionTree()` is used to construct a binary tree storing all the operators and operands with data from the tokenList. We maintain **two stacks**, **nodeStack** is used to store operands and one is used to store operators. And then we maintain **opStacksss** according to the precedence of operators.
+
 #### Pseudo-code
 ```c
 Node * createExpressionTree(TokenList * tokenListPtr) {
@@ -100,18 +111,14 @@ Node * createExpressionTree(TokenList * tokenListPtr) {
         push in opstack;
       } else if (operator == ')') {
         while (opTop >= 0 && opStack[opTop]) {
-          pop opNode, rightOperand, leftOperand;
-          setChildren(opNode, leftOperand, rightOperand);
-          push into nodeStack;
+          pop, setchildren and push;
         }
         if (top >= 0) {
           pop all the remaining operators;
         }
       } else {
         while (opTop >= 0 && getPrecedence(topOperator) >= getPrecedence(currentOperator)) {
-          pop opNode, left, right;
-          setChildren(opNode, left, right);
-          push into nodeStack;
+          pop, setchildren and push;
         }
         Node * newOpNode = createNode(operator_type);
         push into opStack;
@@ -119,17 +126,17 @@ Node * createExpressionTree(TokenList * tokenListPtr) {
     }
   }
   while (opTop >= 0) {
-    pop opNode, left, right;
-    setChildren(opNode, left, right);
-    push into nodeStack
+    pop, setchildren and push;
   }
   return nodeTop;
 }
 ```
 
 ### getNodeExpr
+
 #### Description
 - This function is used to generate the corresponding string expression of a certain node. If the node is a **operand node**, then we output the string form of the operand. If the node is an **operator node**, then we output the expression string, combining the left operand, operator and the right operand. Note that the operand here came from **recursive call of getNodeExpr()**
+
 #### Pseudo-code
 ```c
 char * getNodeExpr(Node * node) {
@@ -145,8 +152,10 @@ char * getNodeExpr(Node * node) {
 ```
 
 ### collectVariables
+
 #### Description
 - This function is used to **collect all the existing variables** in the expression. If the variable we are looking for exists, then the flag is true. If it is not found, then we add the variable from the current node into our variable list. After this, we **recursively** call collectVariables to check the variables from the left subtree and right subtree.
+
 #### Pseudo-code
 ```c
 void collectVariables(Node * node, char ** vars, int * count) {
@@ -159,7 +168,7 @@ void collectVariables(Node * node, char ** vars, int * count) {
     }
     if (!exists) {
       vars[*count] = strdup(node->variable);
-      (*count) ++;s
+      (*count) ++;
     }
   }
   collectVariables(node->Left, vars, count);
@@ -168,8 +177,10 @@ void collectVariables(Node * node, char ** vars, int * count) {
 ```
 
 ### derive
+
 #### Description
 - This function is used to **calculate the derivative** from the current node for variable var. For the simplest case for variables and numbers, we can directly get the gradient of 0 or 1. If the type is an operator, then we can calculate the derivative with the **expression and derivative** of left and right. Note that we shall apply a series of **simplification rules** for 0s and 1s. We can use `getNodeExpr()` to get the expression for a certain node and use `formatExpr()` to get the expression.
+
 #### Pseudo-code
 ```c
 char * derive(Node * node, char * var) {
@@ -207,8 +218,10 @@ char * derive(Node * node, char * var) {
 }
 ```
 ### calculateGrad
+
 #### Description
 - Collect all the variables first and then sort the variables in lexicographical order. Then we traverse through all the variables from the root of the entire expression tree, and output the derivative of the variable.
+
 #### Pseudo-code
 ```c
 void calculateGrad(Node * root) {
