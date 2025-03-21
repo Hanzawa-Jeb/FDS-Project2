@@ -535,7 +535,7 @@ char* derive(Node* node, char* var)
 
 void calculateGrad(Node * root) {
     if (!root){
-        printf("Invalid input\n");
+        printf("Invalid input!\n");
         return;
     /*if the expression tree is not generated, then return NULL*/
     }
