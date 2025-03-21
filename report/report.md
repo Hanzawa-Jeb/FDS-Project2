@@ -1,20 +1,88 @@
 ---
 colorlinks: linkcolor, urlcolor
 ...
+---
 
 # 1. Introduction
+We are faced with processing a mathematical expression $S$ in **infix expression** and calculating its gradient with respect to each variable. The results should be output in **lexicographical order**, with the gradient represented by literal constants and other variables.
 
-We are given a mathematical expression in **infix order** and our objective is to **calculate the gradient** in respective to variable in the expression. The gradient can be a combination of variables and literal values.
-
-Auto gradient calculation is prevalent in Machine Learning cases. In packages like `PyTorch`, autograd() is used to back-propagate the gradients to optimize the weights and biases to minimize or maximize the objective function.
+Automatic gradient calculation plays an important role in **Machine Learning**. Famous packages like `PyTorch` has functions such as `.backward()` to compute gradients during **backpropagation**, optimizing the *weights and biases* of the model. This project provides a chance to implement `autograd` from scratch, which is undoubtedly interesting.
 
 # 2. Algorithm Specification
 
+## Overall Insight
 We can handle this problem in a **Step-by-step operation**.
-First, we should **tokenize** the expression, separating variables, literal values and operators.
-After the tokenization, I constructed a **tokenList** to store the different elements with their types labeled.
-And then, I construct a **Expression Tree** with stacks to handle the problem of precedence of different calculations.
-**To be Continued...**
+- First, we should **tokenize** the expression, separating **variables**, **literal values** and **operators**.
+- After the tokenization, I constructed a **tokenList** to store the different elements with their types explicitly labeled.
+- And then, in `constructExpressionTree()`, I construct a **Expression Tree** with stacks to handle the problem of precedence of different calculations.
+- What's next, we need to use `collectVariables()`**collect all the variables** and use `derive()` to **calculate the derivatives** of every variable from the root of the expression tree.
+- Last, We use `calculateGrad()` to traverse all the variable and **output the derivatives** in the lexicographical order.
+
+## Pseudo-code for structs
+### struct Node
+#### Description
+- This struct is used to store one node in the expression tree, with its type and corresponding value.
+- Note that **only one** in operator, number and variable need to be stored, according to the type.
+```c
+typedef struct Node {
+  int type;
+  char operator;
+  int number;
+  char variable[N];
+  struct Node *Left, *Right;
+  struct Node *parent;
+} Node;
+```
+### struct TokenList
+#### Description
+- This struct is used to **store tokens**, after they are extracted from the input infix expression. And then, they will be sent to **construct the expression tree.**
+- **types** are the corresponding types of the token with the same index.
+```c
+typedef struct TokenList {
+  char tokens[N][N];
+  char types[N];
+  int cnt;
+}
+```
+
+## Pseudo-code for functions
+### tokenize()
+#### Description:
+- This function is used to separate the expression into fractions with types labeled, so that we can do further process to variables, literal constants and operators.
+```c
+void tokenize(char * expression, TokenList * tokenListPtr) {
+  int i = 0;
+  while (i < expressionLength) {
+    if (isspace(expression[i])) {
+      continue;
+    }
+    else if (isdigit(expression[i])) {
+      while loop until !isdigit(expression[i]) {
+        store each bit of the number in the tokenlist;
+      }
+      flag the type; 
+    }
+    else if (isOperator(expression[i])) {
+      store the operator;
+      flag the type;
+    }
+    else if (isalpha(expression[i]) || expression[i] == '_') {
+      while loop until !(isalnum(expression[i]) || expression[i] == '_') {
+        store each bit of the variable name in the tokenlist;
+      }
+      flag the type;
+    }
+    else {
+      continue;
+      /*invalid input*/
+    }
+  }
+}
+```
+
+### createExpressionTree()
+#### Description
+- `createExpressionTree()` is used to construct a binary tree storing all the operators and operands with data from the tokenList. We maintain two stacks, one is used to store operands and one is used to 
 
 # 3. Testing Results
 
@@ -22,32 +90,19 @@ Table of test cases. Each test case usually consists of its purpose, the expecte
 
 Table 1 shows some typical test cases for verifying the *Selection Sort* implementation and capturing potential bugs.
 
------------------------------------------------------------------
-Test Cases     Design Purpose          result          status
--------------- ----------------------- --------------- ----------
-[3]            Minimum array with a    [3]             *pass*
-               single element
-
-[1,2,4,5,9]    Array in ascending      [1,2,4,5,9]     *pass*
-               order
-
-[9,5,4,2,1]    Array in descending     [1,2,4,5,9]     *pass*
-               order
-
-[5,-9,2,-1,4]  Array in random order   [-9,-1,2,4,5]   *pass*
-               with negative values
-
-[1,1,1,1,1]    Array with repeated     [1,1,1,1,1]     *pass*
-               values
-
-...            ...                     ...             ...
----------------------------------------------------------------
+| Test Cases     | Design Purpose          | Result          | Status     |
+|----------------|-------------------------|-----------------|------------|
+| [3]            | Minimum array with a single element   | [3]             | *pass*     |
+| [1,2,4,5,9]    | Array in ascending order     | [1,2,4,5,9]     | *pass*     |
+| [9,5,4,2,1]    | Array in descending order    | [1,2,4,5,9]     | *pass*     |
+| [5,-9,2,-1,4]  | Array in random order with negative values  | [-9,-1,2,4,5]   | *pass*     |
+| [1,1,1,1,1]    | Array with repeated values     | [1,1,1,1,1]     | *pass*     |
 
 Table: Test cases for the *Selection Sort* implementation.
 
 Figures 1 shows the running time of the *Selection Sort* implementation. We observe a quadratic-like curve from the figure, which implies an $O(n^2)$ algorithm (see analysis in the next section).
 
-![The running time of *Selection Sort*](runtime.pdf){ height=300px }
+![The running time of *Selection Sort*](null){ height=300px }
 
 # 4. Analysis and Comments
 

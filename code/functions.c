@@ -152,9 +152,9 @@ Node * createExpressionTree(TokenList * tokenListPtr)
             {
                 while (opTop >= 0 && opStack[opTop]->operator != '(')
                 {
-                    /* Pop an operator node.*/
+                    /* Pop an operator node*/
                     Node * opNode = opStack[opTop--];
-                    /* Pop two operand nodes from nodeStack.*/
+                    /* Pop two operand nodes from nodeStack*/
                     Node * right = nodeStack[nodeTop--];
                     Node * left = nodeStack[nodeTop--];
                     /*set the children nodes and their parents*/
@@ -252,7 +252,7 @@ char* getNodeExpr(Node* node)
     /*if no situation is satisfied, then return 0 directly*/
 }
 
-char* formatExpr(const char* fmt, ...)
+char* formatExpr(char* fmt, ...)
 /*the ... is used to express that the parameters we accept can be different, according to the situation we are in*/
 /*we use va to tackle this problem because we might be faced with inputs with different lengths and requirements*/
 {
@@ -470,12 +470,12 @@ char* derive(Node* node, char* var)
                 break;
             case '^':
                 {
-                    char* powExpr = getNodeExpr(node);
+                    char * powExpr = getNodeExpr(node);
                     /*get the power of the expression*/
-                    char* term1 = formatExpr("%s * ln(%s)", rightDeriv, leftExpr);
+                    char * term1 = formatExpr("%s * ln(%s)", rightDeriv, leftExpr);
                     /*separate the expression into two parts*/
                     char* term2 = formatExpr("%s * %s / %s", rightExpr, leftDeriv, leftExpr);
-                    char* sumTerms = formatExpr("(%s + %s)", term1, term2);
+                    char * sumTerms = formatExpr("(%s + %s)", term1, term2);
                     /*get the sumterms*/
                     result = formatExpr("%s * %s", powExpr, sumTerms);
                     free(term1);
@@ -489,7 +489,6 @@ char* derive(Node* node, char* var)
                 result = strdup("0");
                 /*default output*/
         }
-
         free(leftDeriv);
         free(rightDeriv);
         free(leftExpr);

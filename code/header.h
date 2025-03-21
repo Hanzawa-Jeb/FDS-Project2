@@ -14,7 +14,7 @@
 #define TOKEN_IS_OPERATOR 'O'
 /*define some representative values*/
 
-typedef struct Node{
+typedef struct Node {
     int type;   
     /*corresponding to the #define ahead*/
     char operator;
@@ -30,7 +30,7 @@ typedef struct Node{
 } Node;
 /*the struct Node is for the construction of expression tree*/
 
-typedef struct TokenList{
+typedef struct TokenList {
     char tokens[TOKEN_MAX_NUM][EXPR_MAX_LEN];
     /*store the tokens*/
     char types[TOKEN_MAX_NUM];
@@ -53,11 +53,15 @@ void setChildren(Node * parent, Node * left, Node * right);
 Node * createExpressionTree(TokenList * tokenListPtr);
 /*use the tokenlist to create an expression tree*/
 void calculateGrad(Node * root);
-/*used to calculate the gradient according to the expression tree*/
+/*sort the variables with lexicographical order and output their corresponding derivative*/
 char* getNodeExpr(Node* node);
-char* formatExpr(const char* fmt, ...);
+/*get the expression of the node*/
+char* formatExpr(char* fmt, ...);
+/*unified format expression function, no matter what is the length*/
 void collectVariables(Node* node, char** vars, int* count);
+/*collect all the variables in the expression*/
 char* derive(Node* node, char* var);
-int compareStrings(const void* a, const void* b);
-
+/*calculate the derivative of variables*/
+int compareStrings(char * a, char * b);
+/*compare the lexicographical order of strings, used in qsort()*/
 #endif
