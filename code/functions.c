@@ -418,9 +418,23 @@ char* derive(Node* node, char* var)
                     }
                     else
                     {
-                        /*if the right derivative is not zero*/
-                        result = formatExpr("(%s * %s)", leftExpr, rightDeriv);
-                        /*output the answer of the multiplication*/
+                        if (strcmp(leftExpr, "1") == 0)
+                        {
+                            /*if the left expression is 1*/
+                            result = strdup(rightDeriv);
+                            /*output the right derivative*/
+                        }
+                        else if (strcmp(rightDeriv, "1") == 0)
+                        {
+                            /*if the right derivative is 1*/
+                            result = strdup(leftExpr);
+                            /*output the left expression*/
+                        }
+                        else
+                        {
+                            result = formatExpr("(%s * %s)", leftExpr, rightDeriv);
+                            /*output the answer of the multiplication*/
+                        }
                     }
                 }
                 else if (strcmp(rightExpr, "0") == 0)

@@ -130,6 +130,99 @@ Node * createExpressionTree(TokenList * tokenListPtr) {
 ### getNodeExpr
 #### Description
 - This function is used to generate the corresponding string expression of a certain node. If the node is a **operand node**, then we output the string form of the operand. If the node is an **operator node**, then we output the expression string, combining the left operand, operator and the right operand. Note that the operand here came from **recursive call of getNodeExpr()**
+#### Pseudo-code
+```c
+char * getNodeExpr(Node * node) {
+  if (node->type == TOKEN_IS_VAR) {
+    return strdup(node->variable);
+  } else if (node->type == TOKEN_IS_NUM) {
+    return transferToString(node->number);
+  } else if (node->type == TOKEN_IS_OPERATOR) {
+    get left, right, op;
+    return (string)("(%s %c %s)", left, right, op);
+  } else return '0';
+}
+```
+
+### collectVariables
+#### Description
+- This function is used to **collect all the existing variables** in the expression. If the variable we are looking for exists, then the flag is true. If it is not found, then we add the variable from the current node into our variable list. After this, we **recursively** call collectVariables to check the variables from the left subtree and right subtree.
+#### Pseudo-code
+```c
+void collectVariables(Node * node, char ** vars, int * count) {
+  if (node->type == TOKEN_IS_VAR) {
+    bool exists = false;
+    for (int i = 0; i < *count; i ++) {
+      if (strcmp(vars[i], node->variable) == 0) {
+        exists = true;
+      }
+    }
+    if (!exists) {
+      vars[*count] = strdup(node->variable);
+      (*count) ++;s
+    }
+  }
+  collectVariables(node->Left, vars, count);
+  collectVariables(node->Right, vars, count);
+}
+```
+
+### derive
+#### Description
+- This function is used to **calculate the derivative** from the current node for variable var. For the simplest case for variables and numbers, we can directly get the gradient of 0 or 1. If the type is an operator, then we can calculate the derivative with the **expression and derivative** of left and right. Note that we shall apply a series of **simplification rules** for 0s and 1s. We can use `getNodeExpr()` to get the expression for a certain node and use `formatExpr()` to get the expression.
+#### Pseudo-code
+```c
+char * derive(Node * node, char * var) {
+  if (node->type == TOKEN_IS_VAR) {
+    if (strcmp(node->variable, var) == 0) {
+      return "1";
+    } else {
+      return "0";
+    }
+  } else if (node->type == TOKEN_IS_NUM) {
+    return "0";
+  } else if (node->type == TOKEN_IS_OPERATOR) {
+    get operator, leftDeriv, rightDeriv, leftExpr, rightExpr;
+    initialize result;
+    switch(operator) {
+      case '+':
+        result = leftDeriv + rightDeriv;
+        /*note that we need to process special cases here*/
+        break;
+      case '-':
+        result = leftDeriv - rightDeriv;
+        break;
+      case '*':
+        result = leftDeriv * rightExpr + rightExpr * rightDeriv;
+        /*note that there are a lot of special cases here*/
+        break;
+      case '/':
+        result = (leftDeriv * rightExpr - leftExpr * rightDeriv)/(rightExpr ^ 2);
+        break;
+      case '^':
+        result = getNodeExpr(node) * (rightDeriv * ln(leftExpr)+(rightExpr*leftDeriv/leftExpr));
+        break;
+    } 
+  }
+}
+```
+### calculateGrad
+#### Description
+- Collect all the variables first and then sort the variables in lexicographical order. Then we traverse through all the variables from the root of the entire expression tree, and output the derivative of the variable.
+#### Pseudo-code
+```c
+void calculateGrad(Node * root) {
+  initialize varCount, variables;
+  collectVariables(root, variables, &varCount);
+  qsort(variables, varCount, sizeof(char *), compareStrings);
+  /*compareStrings() is used to implement the lexicographical sort*/
+  for (int i = 0; i < varCount; i ++) {
+    char * derivExpr = derive(root, variables[i]);
+    printf(variables[i], derivExpr);
+    free(derivExpr);
+  }
+}
+```
 
 
 # 3. Testing Results
