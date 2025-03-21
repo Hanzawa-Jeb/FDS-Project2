@@ -524,6 +524,12 @@ void calculateGrad(Node * root) {
     /*count the number of variables*/
     collectVariables(root, variables, &varCount);
     /*collect variables recursively from the root pointer of the entire expression tree*/
+    if (varCount == 0)
+    {
+        printf("Underivable Expression!\n");
+        /*if there is no variable, then the expression is underivable*/
+        return;
+    }
     qsort(variables, varCount, sizeof(char*), compareStrings);
     /*sort the variables in the lexicographical order, with compareStrings() providing the comparing function*/
     /*because the requirement is to output with the lexicographical order, I use this.*/

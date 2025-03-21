@@ -13,12 +13,13 @@ Automatic gradient calculation plays an important role in **Machine Learning**. 
 ## Overall Insight  
 We can handle this problem in a **Step-by-step operation**.  
 - First, we should **tokenize** the expression, separating **variables**, **literal values** and **operators**.  
-- After the tokenization, I constructed a **tokenList** to store the different elements with their types explicitly labeled.  
+- After the tokenization, I constructed a **tokenList** to store the different elements with their types explicitly **labeled**.  
 - And then, in `constructExpressionTree()`, I construct a **Expression Tree** with stacks to handle the problem of precedence of different calculations.  
-- What's next, we need to use `collectVariables()`**collect all the variables** and use `derive()` to **calculate the derivatives** of every variable from the root of the expression tree.  
+- What's next, we need to use `collectVariables()`to **collect all the variables** and use `derive()` to **calculate the derivatives** of every variable from the root of the expression tree.  
 - Last, We use `calculateGrad()` to traverse all the variable and **output the derivatives** in the lexicographical order.  
+- On the whole, `main.c` will serve as the main program, handling the problem of user input and answer output. 
 
-## Specifications for *data structures*
+## Specifications for ***data structures***
 
 ### struct Node  
 
@@ -53,7 +54,7 @@ typedef struct TokenList {
 }
 ```
 
-## Specifications for *Algorithms*
+## Specifications for ***Algorithms***
 
 ### tokenize()
 
@@ -65,25 +66,10 @@ typedef struct TokenList {
 void tokenize(char * expression, TokenList * tokenListPtr) {
   int i = 0;
   while (i < expressionLength) {
-    if (isspace(expression[i])) {
-      continue;
-    } else if (isdigit(expression[i])) {
-      while loop until !isdigit(expression[i]) {
-        store each bit of the number in the tokenlist;
-      }
-      flag the type; 
-    } else if (isOperator(expression[i])) {
-      store the operator;
-      flag the type;
-    } else if (isalpha(expression[i]) || expression[i] == '_') {
-      while loop until !(isalnum(expression[i]) || expression[i] == '_') {
-        store each bit of the variable name in the tokenlist;
-      }
-      flag the type;
-    } else {
-      continue;
-      /*invalid input*/
-    }
+    if isspace(expression[i]):continue;
+    else if isdigit(expression[i]) loop until the end of the number;
+    else if (isOperator(expression[i])): add it into the tokenlist;
+    else if (isalpha(expression[i]) || expression[i] == '-') loop until the end of variable;
   }
 }
 ```
@@ -98,32 +84,9 @@ void tokenize(char * expression, TokenList * tokenListPtr) {
 Node * createExpressionTree(TokenList * tokenListPtr) {
   intialize tokenListLen, nodeStack, opStack;
   for (i < tokenListLen) {
-    if (tokenListPtr->type == TOKEN_IS_NUM) {
-      createNode(num_type);
-      push in nodeStack;
-    } else if (tokenListPtr->type == TOKEN_IS_VAR) {
-      createNode(var_type);
-      push in nodeStack;
-    } else if (tokenListPtr->type == TOKEN_IS_OPERATOR) {
-      get operator;
-      if (operator == '(') {
-        createNode(op_type);
-        push in opstack;
-      } else if (operator == ')') {
-        while (opTop >= 0 && opStack[opTop]) {
-          pop, setchildren and push;
-        }
-        if (top >= 0) {
-          pop all the remaining operators;
-        }
-      } else {
-        while (opTop >= 0 && getPrecedence(topOperator) >= getPrecedence(currentOperator)) {
-          pop, setchildren and push;
-        }
-        Node * newOpNode = createNode(operator_type);
-        push into opStack;
-      }
-    }
+    switch(tokenListPtr->type):
+      process expressions with precedence considered;
+      pop and push to the opStack and nodeStack;
   }
   while (opTop >= 0) {
     pop, setchildren and push;
@@ -161,18 +124,10 @@ char * getNodeExpr(Node * node) {
 void collectVariables(Node * node, char ** vars, int * count) {
   if (node->type == TOKEN_IS_VAR) {
     bool exists = false;
-    for (int i = 0; i < *count; i ++) {
-      if (strcmp(vars[i], node->variable) == 0) {
-        exists = true;
-      }
-    }
-    if (!exists) {
-      vars[*count] = strdup(node->variable);
-      (*count) ++;
-    }
+    for loop until we find the variable;
+    if not found, add it into the list and (*count)++;
   }
-  collectVariables(node->Left, vars, count);
-  collectVariables(node->Right, vars, count);
+  recursively collect variables from left and right;
 }
 ```
 
@@ -196,23 +151,7 @@ char * derive(Node * node, char * var) {
     get operator, leftDeriv, rightDeriv, leftExpr, rightExpr;
     initialize result;
     switch(operator) {
-      case '+':
-        result = leftDeriv + rightDeriv;
-        /*note that we need to process special cases here*/
-        break;
-      case '-':
-        result = leftDeriv - rightDeriv;
-        break;
-      case '*':
-        result = leftDeriv * rightExpr + rightExpr * rightDeriv;
-        /*note that there are a lot of special cases here*/
-        break;
-      case '/':
-        result = (leftDeriv * rightExpr - leftExpr * rightDeriv)/(rightExpr ^ 2);
-        break;
-      case '^':
-        result = getNodeExpr(node) * (rightDeriv * ln(leftExpr)+(rightExpr*leftDeriv/leftExpr));
-        break;
+      calculate the derivative according to the mathematical law;
     } 
   }
 }
@@ -237,26 +176,37 @@ void calculateGrad(Node * root) {
 }
 ```
 
+## Specifications for ***main program***
+
+### Description
+- The `main.c` here is the main program. It is used to accept input, and then print the output, and tackle with some errors. Thanks to the functions implemented in `functions.c`, the main program here can be very concise.
+
+### Pseudo-code
+```c
+int main() {
+  char * inputExpr;
+  TokenList * tokenListPtr;
+  Node * rootPtr;
+  fgets(inputExpr);
+  tokenize(inputExpr, tokenListPtr);
+  rootPtr = createExpressionTree(tokenListPtr);
+  if (!rootPtr) calculateGrad(rootPtr); 
+}
+```
 
 # 3. Testing Results
 
-Table of test cases. Each test case usually consists of its purpose, the expected result, the program's actual behavior, the possible cause of a bug if your program does not function as expected, and the current status (*pass*, or *corrected*, or *pending*).
-
-Table 1 shows some typical test cases for verifying the *Selection Sort* implementation and capturing potential bugs.
+Here, we are testing various cases to seek potential issues in our program. These include, but are not limited to, extreme cases such as expressions without derivable terms and nested complex expressions.
 
 | Test Cases     | Design Purpose          | Result          | Status     |
 |----------------|-------------------------|-----------------|------------|
-| [3]            | Minimum array with a single element   | [3]             | *pass*     |
-| [1,2,4,5,9]    | Array in ascending order     | [1,2,4,5,9]     | *pass*     |
-| [9,5,4,2,1]    | Array in descending order    | [1,2,4,5,9]     | *pass*     |
-| [5,-9,2,-1,4]  | Array in random order with negative values  | [-9,-1,2,4,5]   | *pass*     |
-| [1,1,1,1,1]    | Array with repeated values     | [1,1,1,1,1]     | *pass*     |
+| 1+2            | case without derivable term   | Underivable Expression!             | *pass*     |
+| xx + _xy^ab    | expression with multi-letter variable name     | _xy: (_xy ^ ab) * (0 * ln(_xy) + ab * 1 / _xy), ab: (_xy ^ ab) * (1 * ln(_xy) + ab * 0 / _xy), xx: (1 + (_xy ^ ab) * (0 * ln(_xy) + ab * 0 / _xy))    | *pass*     |
+| (a+b)^c    | expression with parentheses     | a: ((a + b) ^ c) * (0 * ln((a + b)) + c * 1 / (a + b)) b: ((a + b) ^ c) * (0 * ln((a + b)) + c * 1 / (a + b)), c: ((a + b) ^ c) * (1 * ln((a + b)) + c * 0 / (a + b))     | *pass*     |
+| a+b+c+d+e+f*g  | relatively long expression  | a:1, b:1, c:1, d:1, e:1, f:(g\*1), g:(f\*1)   | *pass*     |
+| a    | expression with only one variable    | a: 1     | *pass*     |
 
-Table: Test cases for the *Selection Sort* implementation.
 
-Figures 1 shows the running time of the *Selection Sort* implementation. We observe a quadratic-like curve from the figure, which implies an $O(n^2)$ algorithm (see analysis in the next section).
-
-![The running time of *Selection Sort*](null){ height=300px }
 
 # 4. Analysis and Comments
 
