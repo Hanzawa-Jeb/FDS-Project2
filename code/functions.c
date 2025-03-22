@@ -150,7 +150,8 @@ Node *createExpressionTree(TokenList *tokenListPtr) {
             /*pop */
             else if (currentOp == ')') {
                 while (opTop >= 0 && opStack[opTop]->operator != '(') {
-                    if (nodeTop < 1)  // error check for insufficient operands
+                    if (nodeTop < 1)  
+                    /* error check for insufficient operands */
                     {
                         printf("Invalid input\n");
                         return NULL;
@@ -172,7 +173,8 @@ Node *createExpressionTree(TokenList *tokenListPtr) {
             else {
                 /*tackle the case of meeting greater precedence*/
                 while (opTop >= 0 && getPrecedence(opStack[opTop]->operator) >= getPrecedence(currentOp)) {
-                    if (nodeTop < 1)  // error check for insufficient operands
+                    if (nodeTop < 1)  
+                    /* error check for insufficient operands*/
                     {
                         printf("Invalid input\n");
                         return NULL;
@@ -193,7 +195,8 @@ Node *createExpressionTree(TokenList *tokenListPtr) {
     }
     /*processing left parenthesis that are left here*/
     while (opTop >= 0) {
-        if (nodeTop < 1)  // error check
+        if (nodeTop < 1)
+        /*error check*/
         {
             printf("Invalid input\n");
             return NULL;
